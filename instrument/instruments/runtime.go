@@ -71,6 +71,11 @@ func runtime_goid() uint64 {
 }
 
 //go:nosplit
+func runtime_gopc() uintptr {
+	return getg().gopc
+}
+
+//go:nosplit
 func runtime_get_thread_locals() unsafe.Pointer {
 	return getg().threadLocals
 }
