@@ -17,6 +17,9 @@ func RunCmd(args []string) {
 	cmd.Stderr = os.Stderr
 	startCmd(cmd)
 	statusCode := waitCmd(cmd)
+	if statusCode == 0 {
+		return
+	}
 	os.Exit(statusCode)
 }
 
