@@ -1,12 +1,72 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
 	"os"
+	"os/exec"
+	"path"
+	"strings"
 	"testing"
 )
 
-func TestMainMain(t *testing.T) {
-	args := []string{"test", "-p", "/demo", "-p", "dddx", "C:\\Program Files\\go\\go1.20\\pkg\\tool\\windows_amd64\\compile.exe", "-o", "C:\\Users\\clxu6\\Desktop\\buildxx\\b001\\x.a", "-trimpath", "$WORK\\b008=>", "-p", "runtime", "-std", "-+", "-buildid", "1Ypz7rnoGNQ_yZPhKiBf/1Ypz7rnoGNQ_yZPhKiBf", "-goversion", "go1.20", "-symabis", "$WORK\\b008\\symabis", "-l", "-c=4", "-nolocalimports", "-importcfg", "$WORK\\b008\\importcfg", "-pack", "-asmhdr", "$WORK\\b008\\go_asm.h", "C:\\Program Files\\go\\go1.20\\src\\runtime\\alg.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\arena.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\asan0.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\atomic_pointer.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\auxv_none.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\cgo.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\cgocall.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\cgocallback.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\cgocheck.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\chan.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\checkptr.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\compiler.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\complex.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\covercounter.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\covermeta.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\cpuflags.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\cpuflags_amd64.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\cpuprof.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\cputicks.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\create_file_nounix.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\debug.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\debugcall.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\debuglog.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\debuglog_off.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\defs_windows.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\defs_windows_amd64.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\env_posix.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\error.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\exithook.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\extern.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\fastlog2.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\fastlog2table.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\float.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\hash64.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\heapdump.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\histogram.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\iface.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\lfstack.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\lfstack_64bit.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\lock_sema.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\lockrank.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\lockrank_off.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\malloc.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\map.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\map_fast32.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\map_fast64.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\map_faststr.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mbarrier.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mbitmap.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mcache.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mcentral.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mcheckmark.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mem.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mem_windows.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\metrics.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mfinal.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mfixalloc.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mgc.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mgclimit.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mgcmark.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mgcpacer.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mgcscavenge.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mgcstack.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mgcsweep.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mgcwork.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mheap.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mpagealloc.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mpagealloc_64bit.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mpagecache.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mpallocbits.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mprof.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mranges.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\msan0.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\msize.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mspanset.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mstats.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\mwbbuf.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\netpoll.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\netpoll_windows.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\os_nonopenbsd.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\os_windows.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\pagetrace_off.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\panic.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\plugin.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\preempt.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\print.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\proc.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\profbuf.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\proflabel.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\race0.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\rdebug.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\runtime.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\runtime1.go", "C:\\Program Files\\go\\go1.18\\src\\runtime\\runtime2.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\runtime_boring.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\rwmutex.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\select.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\sema.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\signal_windows.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\sigqueue.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\sigqueue_note.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\sizeclasses.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\slice.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\softfloat64.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\stack.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\stkframe.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\string.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\stubs.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\stubs3.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\stubs_amd64.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\stubs_nonlinux.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\symtab.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\sys_nonppc64x.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\sys_x86.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\syscall_windows.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\time.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\time_nofake.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\timeasm.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\tls_windows_amd64.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\trace.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\traceback.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\type.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\typekind.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\unsafe.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\utf8.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\vdso_in_none.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\write_err.go", "C:\\Program Files\\go\\go1.20\\src\\runtime\\zcallback_windows.go"}
+func TestHelp(t *testing.T) {
+	args := []string{"routiner", "-h", "/demo", "-p", "ttt", "go", "version"}
 	os.Args = args
 	main()
+}
+
+func TestOtherCmd(t *testing.T) {
+	args := []string{"routiner", "-p", "/demo", "-p", "ttt", "git", "version"}
+	os.Args = args
+	main()
+}
+
+func TestOtherCmdHelp(t *testing.T) {
+	args := []string{"routiner", "-p", "/demo", "-p", "ttt", "git", "-h"}
+	os.Args = args
+	main()
+}
+
+func TestCompileCmdHelp(t *testing.T) {
+	goToolDir := getGoToolDir()
+	compilePath := path.Join(goToolDir, "compile.exe")
+	args := []string{"routiner", "-p", "/demo", "-p", "ttt", compilePath, "-h"}
+	os.Args = args
+	// expect exit 2
+	// main()
+}
+
+func getGoToolDir() string {
+	cmd := exec.Command("go", "env")
+	out := bytes.Buffer{}
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = &out
+	cmd.Stderr = os.Stderr
+	//运行命令
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println("go env error:", err)
+		return ""
+	}
+	//获取输出
+	outStr := out.String()
+	rows := strings.Split(outStr, "\n")
+	for _, row := range rows {
+		skvArray := strings.Split(row, "=")
+		if len(skvArray) != 2 {
+			continue
+		}
+		skArray := skvArray[0]
+		sk := strings.Split(skArray, " ")
+		if len(sk) != 2 {
+			continue
+		}
+		k := sk[1]
+		if !strings.EqualFold(k, "GOTOOLDIR") {
+			continue
+		}
+		return skvArray[1]
+	}
+	return ""
 }
