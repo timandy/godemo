@@ -10,6 +10,11 @@ import (
 	"github.com/timandy/pflag"
 )
 
+func PrintUsage(flagSet *pflag.FlagSet) {
+	usage := fmt.Sprintf("Usage: %s [OPTIONS] [NEXT_TOOLEXEC] [ARGS] [COMMAND] [ARGS]...\n\nOptions:\n%s", flagSet.Name(), flagSet.FlagUsages())
+	_, _ = fmt.Fprint(flagSet.Output(), usage)
+}
+
 func ParseStruct(structPtr interface{}, execName string, args []string) *pflag.FlagSet {
 	flagSet := createStructFlagSet(structPtr, execName)
 	_ = flagSet.Parse(args)
@@ -24,10 +29,7 @@ func createStructFlagSet(structPtr interface{}, execName string) *pflag.FlagSet 
 	flagSet.AllowMultCharsShorthand = true
 	flagSet.ParseErrorsWhitelist.UnknownFlags = true
 	flagSet.SetInterspersed(false)
-	flagSet.Usage = func() {
-		usage := fmt.Sprintf("Usage: %s [OPTIONS] [NEXT_TOOLEXEC] [ARGS] [COMMAND] [ARGS]...\n\nOptions:\n%s", flagSet.Name(), flagSet.FlagUsages())
-		_, _ = fmt.Fprint(flagSet.Output(), usage)
-	}
+	flagSet.Usage = func() {}
 	for i := 0; i < typ.NumField(); i++ {
 		field := elem.Field(i)
 		tag := typ.Field(i).Tag

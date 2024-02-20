@@ -15,7 +15,7 @@ func main() {
 	flagSet := flag.ParseStruct(routineCompileOptions, os.Args[0], args)
 	// print usage
 	if routineCompileOptions.Help {
-		flagSet.Usage()
+		flag.PrintUsage(flagSet)
 		return
 	}
 	// no remained args, do nothing and return
