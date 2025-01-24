@@ -3,7 +3,7 @@ module github.com/timandy/routiner
 go 1.20
 
 require (
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.10.0
 	github.com/timandy/pflag v1.0.0
 )
 

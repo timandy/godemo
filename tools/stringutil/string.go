@@ -14,7 +14,7 @@ func LastIndexOf(slice []string, value string) int {
 	return -1
 }
 
-func ExecuteTemplate(tmpl string, params interface{}) string {
+func ExecuteTemplate(tmpl string, params any) string {
 	t, err := template.New("").Parse(tmpl)
 	if err != nil {
 		panic(err)

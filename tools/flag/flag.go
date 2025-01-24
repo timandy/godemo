@@ -15,13 +15,13 @@ func PrintUsage(flagSet *pflag.FlagSet) {
 	_, _ = fmt.Fprint(flagSet.Output(), usage)
 }
 
-func ParseStruct(structPtr interface{}, execName string, args []string) *pflag.FlagSet {
+func ParseStruct(structPtr any, execName string, args []string) *pflag.FlagSet {
 	flagSet := createStructFlagSet(structPtr, execName)
 	_ = flagSet.Parse(args)
 	return flagSet
 }
 
-func createStructFlagSet(structPtr interface{}, execName string) *pflag.FlagSet {
+func createStructFlagSet(structPtr any, execName string) *pflag.FlagSet {
 	shortName := filepath.Base(execName)
 	elem := reflect.ValueOf(structPtr).Elem()
 	typ := elem.Type()

@@ -3,11 +3,15 @@ package api
 import (
 	"path/filepath"
 	"strings"
+
+	"github.com/timandy/routiner/tools/slices"
 )
 
 type CompileOptions struct {
 	Package string   `name:"package" shorthand:"p" usage:"set expected package import path"`
 	Output  string   `name:"output" shorthand:"o" usage:"write output to file"`
+	Debug   bool     // debug mode enabled or not
+	Verbose bool     // verbose mode enabled or not
 	Args    []string // remain args exclude the options of current program
 }
 
@@ -24,7 +28,11 @@ func (c CompileOptions) WorkDir() string {
 }
 
 func (c CompileOptions) Clone() *CompileOptions {
-	args := make([]string, len(c.Args))
-	copy(args, c.Args)
-	return &CompileOptions{Package: c.Package, Output: c.Output, Args: args}
+	return &CompileOptions{
+		Package: c.Package,
+		Output:  c.Output,
+		Debug:   c.Debug,
+		Verbose: c.Verbose,
+		Args:    slices.Clone(c.Args),
+	}
 }

@@ -3,6 +3,7 @@ package instruments
 import (
 	"go/ast"
 	"go/token"
+	"path/filepath"
 	"strings"
 
 	"github.com/timandy/routiner/instrument/api"
@@ -13,7 +14,6 @@ import (
 )
 
 type RuntimeInstrument struct {
-	goidType string
 }
 
 func NewRuntimeInstrument() api.Instrument {
@@ -34,7 +34,7 @@ func (r *RuntimeInstrument) PreHandleFile(path string, idx int, options *api.Com
 func (r *RuntimeInstrument) HandleFile(path string, idx int, fset *token.FileSet, af *ast.File, options *api.CompileOptions, result *api.InstrumentResult) bool {
 	handled := false
 	ast.Inspect(af, func(node ast.Node) bool {
-		if r.handleNode(node) {
+		if r.handleNode(node, options) {
 			handled = true
 			return false
 		}
@@ -45,7 +45,9 @@ func (r *RuntimeInstrument) HandleFile(path string, idx int, fset *token.FileSet
 
 //goland:noinspection GoUnusedParameter
 func (r *RuntimeInstrument) PostHandleFile(path string, idx int, fset *token.FileSet, af *ast.File, options *api.CompileOptions, result *api.InstrumentResult) {
-	destPath := astutil.SaveAs(path, options.WorkDir(), fset, af)
+	srcShortName := filepath.Base(path)
+	destPath := filepath.Join(options.WorkDir(), srcShortName)
+	astutil.SaveAs(destPath, fset, af)
 	result.ReplaceFiles[idx] = destPath
 }
 
@@ -53,54 +55,31 @@ func (r *RuntimeInstrument) PostHandleFile(path string, idx int, fset *token.Fil
 func (r *RuntimeInstrument) PostHandlePackage(options *api.CompileOptions, result *api.InstrumentResult) {
 	code := stringutil.ExecuteTemplate(`package runtime
 
-import "unsafe"
+import _ "unsafe"
 
 //go:nosplit
-func runtime_g0() interface{} {
+//go:linkname getg0
+func getg0() interface{} {
 	return g0
 }
 
 //go:nosplit
-func runtime_getg() *g {
+//go:linkname getgp
+func getgp() *g {
 	return getg()
 }
-
-//go:nosplit
-func runtime_goid() uint64 {
-	return {{.GoidExpr}}
-}
-
-//go:nosplit
-func runtime_gopc() uintptr {
-	return getg().gopc
-}
-
-//go:nosplit
-func runtime_get_thread_locals() unsafe.Pointer {
-	return getg().threadLocals
-}
-
-//go:nosplit
-func runtime_set_thread_locals(threadLocals unsafe.Pointer) {
-	getg().threadLocals = threadLocals
-}
-
-//go:nosplit
-func runtime_get_inheritable_thread_locals() unsafe.Pointer {
-	return getg().inheritableThreadLocals
-}
-
-//go:nosplit
-func runtime_set_inheritable_thread_locals(inheritableThreadLocals unsafe.Pointer) {
-	getg().inheritableThreadLocals = inheritableThreadLocals
-}
-`, struct{ GoidExpr string }{GoidExpr: r.getGoidExpr("getg().goid")})
+`, nil)
 	// save file
-	destPath := os.WriteFile(options.WorkDir(), "runtime_routine.go", code)
+	destShortName := "runtime_routine.go"
+	destPath := filepath.Join(options.WorkDir(), destShortName)
+	os.WriteFile(destPath, code)
 	result.ExtraFiles = append(result.ExtraFiles, destPath)
+	if options.Debug || options.Verbose {
+		log.Info("create function 'runtime.getg0' and 'runtime.getgp'")
+	}
 }
 
-func (r *RuntimeInstrument) handleNode(node ast.Node) bool {
+func (r *RuntimeInstrument) handleNode(node ast.Node, options *api.CompileOptions) bool {
 	switch n := node.(type) {
 	case *ast.TypeSpec:
 		ident := n.Name
@@ -119,12 +98,13 @@ func (r *RuntimeInstrument) handleNode(node ast.Node) bool {
 		if len(fieldList) == 0 {
 			return false
 		}
-		r.goidType = astutil.GetFieldType(fieldList, "goid")
 		threadLocalsField := astutil.CreateField("threadLocals", "unsafe.Pointer")
 		inheritableThreadLocalsField := astutil.CreateField("inheritableThreadLocals", "unsafe.Pointer")
 		fields.List = append(fieldList, threadLocalsField, inheritableThreadLocalsField)
-		log.Info("enhance struct 'runtime.g' add field 'threadLocals unsafe.Pointer'")
-		log.Info("enhance struct 'runtime.g' add field 'inheritableThreadLocals unsafe.Pointer'")
+		if options.Debug || options.Verbose {
+			log.Info("enhance struct 'runtime.g' add field 'threadLocals unsafe.Pointer'")
+			log.Info("enhance struct 'runtime.g' add field 'inheritableThreadLocals unsafe.Pointer'")
+		}
 		return true
 	case *ast.FuncDecl:
 		// check name
@@ -163,17 +143,12 @@ func (r *RuntimeInstrument) handleNode(node ast.Node) bool {
 		threadLocalsStmt := astutil.CreateAssignNilStmt(x, "threadLocals")
 		inheritableThreadLocalsStmt := astutil.CreateAssignNilStmt(x, "inheritableThreadLocals")
 		body.List = append(list[:index+1], append([]ast.Stmt{threadLocalsStmt, inheritableThreadLocalsStmt}, list[index+1:]...)...)
-		log.Info("enhance method 'runtime.goexit0' add statement 'gp.threadLocals = nil'")
-		log.Info("enhance method 'runtime.goexit0' add statement 'gp.inheritableThreadLocals = nil'")
+		if options.Debug || options.Verbose {
+			log.Info("enhance function 'runtime.goexit0' add statement 'gp.threadLocals = nil'")
+			log.Info("enhance function 'runtime.goexit0' add statement 'gp.inheritableThreadLocals = nil'")
+		}
 		return true
 	default:
 		return false
 	}
-}
-
-func (r *RuntimeInstrument) getGoidExpr(expr string) string {
-	if r.goidType == "uint64" {
-		return expr
-	}
-	return "uint64(" + expr + ")"
 }

@@ -5,29 +5,7 @@ import (
 	"go/printer"
 	"go/token"
 	"os"
-	"path/filepath"
 )
-
-func GetFieldType(fieldList []*ast.Field, name string) string {
-	for _, field := range fieldList {
-		if len(field.Names) == 0 {
-			continue
-		}
-		ident := field.Names[0]
-		if ident == nil {
-			continue
-		}
-		if ident.Name != name {
-			continue
-		}
-		typeIdent := field.Type.(*ast.Ident)
-		if typeIdent == nil {
-			continue
-		}
-		return typeIdent.Name
-	}
-	return ""
-}
 
 func CreateField(name string, typ string) *ast.Field {
 	return &ast.Field{Names: []*ast.Ident{ast.NewIdent(name)}, Type: ast.NewIdent(typ)}
@@ -86,19 +64,15 @@ func CreateAssignNilStmt(x ast.Expr, name string) ast.Stmt {
 	}
 }
 
-func SaveAs(sourcePath string, destDir string, fset *token.FileSet, af *ast.File) string {
-	shortName := filepath.Base(sourcePath)
-	destPath := filepath.Join(destDir, shortName)
+func SaveAs(path string, fset *token.FileSet, af *ast.File) {
 	// create dest file
-	destFile, err := os.Create(destPath)
+	destFile, err := os.Create(path)
 	if err != nil {
 		panic(err)
 	}
 	defer destFile.Close()
 	// write code to dest file
-	err = printer.Fprint(destFile, fset, af)
-	if err != nil {
+	if err = printer.Fprint(destFile, fset, af); err != nil {
 		panic(err)
 	}
-	return destPath
 }

@@ -1,21 +1,16 @@
 package os
 
-import (
-	"os"
-	"path/filepath"
-)
+import "os"
 
-func WriteFile(workDir, shortname, data string) string {
-	destPath := filepath.Join(workDir, shortname)
+func WriteFile(path, data string) {
 	// create or override file
-	destFile, err := os.Create(destPath)
+	destFile, err := os.Create(path)
 	if err != nil {
 		panic(err)
 	}
 	defer destFile.Close()
 	// write data to dest file
 	if _, err = destFile.WriteString(data); err != nil {
-		return ""
+		panic(err)
 	}
-	return destPath
 }
