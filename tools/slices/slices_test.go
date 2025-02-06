@@ -50,54 +50,41 @@ var equalFloatTests = []struct {
 	},
 }
 
-var deleteFuncTests = []struct {
+var filterTests = []struct {
 	s    []int
 	fn   func(int) bool
 	want []int
 }{
 	{
 		nil,
-		func(int) bool { return true },
-		nil,
-	},
-	{
-		[]int{1, 2, 3},
-		func(int) bool { return true },
+		func(int) bool { return false },
 		nil,
 	},
 	{
 		[]int{1, 2, 3},
 		func(int) bool { return false },
+		nil,
+	},
+	{
+		[]int{1, 2, 3},
+		func(int) bool { return true },
 		[]int{1, 2, 3},
 	},
 	{
 		[]int{1, 2, 3},
-		func(i int) bool { return i > 2 },
+		func(i int) bool { return i <= 2 },
 		[]int{1, 2},
 	},
 	{
 		[]int{1, 2, 3},
-		func(i int) bool { return i < 2 },
+		func(i int) bool { return i >= 2 },
 		[]int{2, 3},
 	},
 	{
 		[]int{10, 2, 30},
-		func(i int) bool { return i >= 10 },
+		func(i int) bool { return i < 10 },
 		[]int{2},
 	},
-}
-
-func TestEqual(t *testing.T) {
-	for _, test := range equalIntTests {
-		if got := Equal(test.s1, test.s2); got != test.want {
-			t.Errorf("Equal(%v, %v) = %t, want %t", test.s1, test.s2, got, test.want)
-		}
-	}
-	for _, test := range equalFloatTests {
-		if got := Equal(test.s1, test.s2); got != test.wantEqual {
-			t.Errorf("Equal(%v, %v) = %t, want %t", test.s1, test.s2, got, test.wantEqual)
-		}
-	}
 }
 
 func TestClone(t *testing.T) {
@@ -119,11 +106,24 @@ func TestClone(t *testing.T) {
 	}
 }
 
-func TestDeleteFunc(t *testing.T) {
-	for i, test := range deleteFuncTests {
+func TestEqual(t *testing.T) {
+	for _, test := range equalIntTests {
+		if got := Equal(test.s1, test.s2); got != test.want {
+			t.Errorf("Equal(%v, %v) = %t, want %t", test.s1, test.s2, got, test.want)
+		}
+	}
+	for _, test := range equalFloatTests {
+		if got := Equal(test.s1, test.s2); got != test.wantEqual {
+			t.Errorf("Equal(%v, %v) = %t, want %t", test.s1, test.s2, got, test.wantEqual)
+		}
+	}
+}
+
+func TestFilter(t *testing.T) {
+	for i, test := range filterTests {
 		copied := Clone(test.s)
-		if got := DeleteFunc(copied, test.fn); !Equal(got, test.want) {
-			t.Errorf("DeleteFunc case %d: got %v, want %v", i, got, test.want)
+		if got := Filter(copied, test.fn); !Equal(got, test.want) {
+			t.Errorf("Filter case %d: got %v, want %v", i, got, test.want)
 		}
 	}
 }

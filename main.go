@@ -8,15 +8,17 @@ import (
 	"github.com/timandy/routiner/tools/flag"
 	"github.com/timandy/routiner/tools/log"
 	"github.com/timandy/routiner/tools/opt"
+	"github.com/timandy/routiner/tools/slices"
 )
 
 func main() {
-	// parse routine compile options
-	args := os.Args[1:]
+	// parse app options
+	args := slices.Filter(os.Args, func(s string) bool { return s != "" })
 	appOpt := &opt.AppOptions{}
-	flagSet := flag.ParseStruct(appOpt, os.Args[0], args)
+	flagSet := flag.ParseStruct(appOpt, args[0], args[1:])
+	// print entry args
 	if appOpt.Debug {
-		log.PrintArgs("entry", os.Args)
+		log.PrintArgs("entry", args)
 	}
 	// print usage
 	if appOpt.Help {
@@ -24,13 +26,21 @@ func main() {
 		flag.PrintUsage(flagSet)
 		return
 	}
-	// no remained args, do nothing and return
+	// print before args
 	remainArgs := flagSet.Args()
 	if appOpt.Debug {
 		log.PrintArgs("before", remainArgs)
 	}
+	// return when no remain args
+	if len(remainArgs) == 0 {
+		if appOpt.Debug {
+			log.Info("no remain args and exit")
+		}
+		return
+	}
 	// exists remained args, run the cmd finally
 	defer func() {
+		// print after args
 		if appOpt.Debug {
 			log.PrintArgs("after", remainArgs)
 		}

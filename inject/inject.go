@@ -49,7 +49,7 @@ func execute0(injector api.Injector, options *api.CompileOptions, asmHdrIdx int)
 			options.Args[idx] = path
 		}
 		args := append(options.Args, result.ExtraFiles...)
-		args = slices.DeleteFunc(args, func(str string) bool { return str == "" })
+		args = slices.Filter(args, func(str string) bool { return str != "" })
 		options.Args = args
 	}()
 	// verify this injector can handle the package
