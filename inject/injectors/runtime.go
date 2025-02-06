@@ -1,4 +1,4 @@
-package instruments
+package injectors
 
 import (
 	"go/ast"
@@ -6,32 +6,32 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/timandy/routiner/instrument/api"
+	"github.com/timandy/routiner/inject/api"
 	"github.com/timandy/routiner/tools/astutil"
 	"github.com/timandy/routiner/tools/log"
 	"github.com/timandy/routiner/tools/os"
 	"github.com/timandy/routiner/tools/stringutil"
 )
 
-type RuntimeInstrument struct {
+type RuntimeInjector struct {
 }
 
-func NewRuntimeInstrument() api.Instrument {
-	return &RuntimeInstrument{}
+func NewRuntimeInjector() api.Injector {
+	return &RuntimeInjector{}
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RuntimeInstrument) PreHandlePackage(options *api.CompileOptions, result *api.InstrumentResult) bool {
+func (r *RuntimeInjector) PreHandlePackage(options *api.CompileOptions, result *api.InjectResult) bool {
 	return options.Package == "runtime"
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RuntimeInstrument) PreHandleFile(path string, idx int, options *api.CompileOptions, result *api.InstrumentResult) bool {
+func (r *RuntimeInjector) PreHandleFile(path string, idx int, options *api.CompileOptions, result *api.InjectResult) bool {
 	return strings.HasSuffix(path, "runtime2.go") || strings.HasSuffix(path, "proc.go")
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RuntimeInstrument) HandleFile(path string, idx int, fset *token.FileSet, af *ast.File, options *api.CompileOptions, result *api.InstrumentResult) bool {
+func (r *RuntimeInjector) HandleFile(path string, idx int, fset *token.FileSet, af *ast.File, options *api.CompileOptions, result *api.InjectResult) bool {
 	handled := false
 	ast.Inspect(af, func(node ast.Node) bool {
 		if r.handleNode(node, options) {
@@ -44,7 +44,7 @@ func (r *RuntimeInstrument) HandleFile(path string, idx int, fset *token.FileSet
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RuntimeInstrument) PostHandleFile(path string, idx int, fset *token.FileSet, af *ast.File, options *api.CompileOptions, result *api.InstrumentResult) {
+func (r *RuntimeInjector) PostHandleFile(path string, idx int, fset *token.FileSet, af *ast.File, options *api.CompileOptions, result *api.InjectResult) {
 	srcShortName := filepath.Base(path)
 	destPath := filepath.Join(options.WorkDir(), srcShortName)
 	astutil.SaveAs(destPath, fset, af)
@@ -52,7 +52,7 @@ func (r *RuntimeInstrument) PostHandleFile(path string, idx int, fset *token.Fil
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RuntimeInstrument) PostHandlePackage(options *api.CompileOptions, result *api.InstrumentResult) {
+func (r *RuntimeInjector) PostHandlePackage(options *api.CompileOptions, result *api.InjectResult) {
 	code := stringutil.ExecuteTemplate(`package runtime
 
 import _ "unsafe"
@@ -79,7 +79,7 @@ func getgp() *g {
 	}
 }
 
-func (r *RuntimeInstrument) handleNode(node ast.Node, options *api.CompileOptions) bool {
+func (r *RuntimeInjector) handleNode(node ast.Node, options *api.CompileOptions) bool {
 	switch n := node.(type) {
 	case *ast.TypeSpec:
 		ident := n.Name

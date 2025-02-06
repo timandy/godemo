@@ -1,4 +1,4 @@
-package instruments
+package injectors
 
 import (
 	"go/ast"
@@ -6,29 +6,29 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/timandy/routiner/instrument/api"
+	"github.com/timandy/routiner/inject/api"
 	"github.com/timandy/routiner/tools/log"
 )
 
-type RoutineXInstrument struct {
+type RoutineXInjector struct {
 }
 
-func NewRoutineXInstrument() api.Instrument {
-	return &RoutineXInstrument{}
+func NewRoutineXInjector() api.Injector {
+	return &RoutineXInjector{}
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RoutineXInstrument) PreHandlePackage(options *api.CompileOptions, result *api.InstrumentResult) bool {
+func (r *RoutineXInjector) PreHandlePackage(options *api.CompileOptions, result *api.InjectResult) bool {
 	return options.Package == "github.com/timandy/routine" || options.Package == "github.com/timandy/routine/g"
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RoutineXInstrument) PreHandleFile(path string, idx int, options *api.CompileOptions, result *api.InstrumentResult) bool {
+func (r *RoutineXInjector) PreHandleFile(path string, idx int, options *api.CompileOptions, result *api.InjectResult) bool {
 	return true
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RoutineXInstrument) HandleFile(path string, idx int, fset *token.FileSet, af *ast.File, options *api.CompileOptions, result *api.InstrumentResult) bool {
+func (r *RoutineXInjector) HandleFile(path string, idx int, fset *token.FileSet, af *ast.File, options *api.CompileOptions, result *api.InjectResult) bool {
 	for _, comment := range af.Comments {
 		for _, c := range comment.List {
 			if r.hasTag(c) {
@@ -40,7 +40,7 @@ func (r *RoutineXInstrument) HandleFile(path string, idx int, fset *token.FileSe
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RoutineXInstrument) PostHandleFile(path string, idx int, fset *token.FileSet, af *ast.File, options *api.CompileOptions, result *api.InstrumentResult) {
+func (r *RoutineXInjector) PostHandleFile(path string, idx int, fset *token.FileSet, af *ast.File, options *api.CompileOptions, result *api.InjectResult) {
 	srcDir := filepath.Dir(path)
 	srcShortName := filepath.Base(path)
 	srcExtName := filepath.Ext(srcShortName)
@@ -53,10 +53,10 @@ func (r *RoutineXInstrument) PostHandleFile(path string, idx int, fset *token.Fi
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RoutineXInstrument) PostHandlePackage(options *api.CompileOptions, result *api.InstrumentResult) {
+func (r *RoutineXInjector) PostHandlePackage(options *api.CompileOptions, result *api.InjectResult) {
 }
 
 // hasTag 是否有 !routinex 编译标记
-func (r *RoutineXInstrument) hasTag(comment *ast.Comment) bool {
+func (r *RoutineXInjector) hasTag(comment *ast.Comment) bool {
 	return comment != nil && strings.TrimSpace(comment.Text) == "//go:build !routinex"
 }

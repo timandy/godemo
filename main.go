@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/timandy/routiner/instrument"
+	"github.com/timandy/routiner/inject"
 	"github.com/timandy/routiner/tools/exec"
 	"github.com/timandy/routiner/tools/flag"
 	"github.com/timandy/routiner/tools/log"
@@ -37,5 +37,5 @@ func main() {
 		exec.RunCmd(remainArgs)
 	}()
 	// exec inject
-	remainArgs = instrument.Execute(remainArgs, appOpt)
+	remainArgs = inject.Execute(remainArgs, appOpt)
 }

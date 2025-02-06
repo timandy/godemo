@@ -1,12 +1,12 @@
-package instrument
+package inject
 
 import (
 	"go/parser"
 	"go/token"
 	"strings"
 
-	"github.com/timandy/routiner/instrument/api"
-	"github.com/timandy/routiner/instrument/instruments"
+	"github.com/timandy/routiner/inject/api"
+	"github.com/timandy/routiner/inject/injectors"
 	"github.com/timandy/routiner/tools/flag"
 	"github.com/timandy/routiner/tools/log"
 	"github.com/timandy/routiner/tools/opt"
@@ -14,7 +14,7 @@ import (
 	"github.com/timandy/routiner/tools/stringutil"
 )
 
-var defaults = []api.Instrument{instruments.NewRuntimeInstrument(), instruments.NewRoutineXInstrument()}
+var defaults = []api.Injector{injectors.NewRuntimeInjector(), injectors.NewRoutineXInjector()}
 
 func Execute(args []string, app *opt.AppOptions) []string {
 	// resolve options
@@ -25,24 +25,24 @@ func Execute(args []string, app *opt.AppOptions) []string {
 	if options.Debug {
 		log.PrintArg("workdir", options.WorkDir())
 	}
-	// exec instruments and return new args
+	// exec injectors and return new args
 	return execute(options.Clone())
 }
 
 func execute(options *api.CompileOptions) []string {
-	for _, ins := range defaults {
+	for _, injector := range defaults {
 		asmHdrIdx := stringutil.LastIndexOf(options.Args, "-asmhdr")
 		if asmHdrIdx == -1 {
 			return options.Args
 		}
-		execute0(ins, options, asmHdrIdx)
+		execute0(injector, options, asmHdrIdx)
 	}
 	return options.Args
 }
 
-func execute0(ins api.Instrument, options *api.CompileOptions, asmHdrIdx int) {
+func execute0(injector api.Injector, options *api.CompileOptions, asmHdrIdx int) {
 	// define result
-	result := api.NewInstrumentResult()
+	result := api.NewInjectResult()
 	// proc args after exec
 	defer func() {
 		for idx, path := range result.ReplaceFiles {
@@ -52,8 +52,8 @@ func execute0(ins api.Instrument, options *api.CompileOptions, asmHdrIdx int) {
 		args = slices.DeleteFunc(args, func(str string) bool { return str == "" })
 		options.Args = args
 	}()
-	// verify this ins can handle the package
-	if !ins.PreHandlePackage(options, result) {
+	// verify this injector can handle the package
+	if !injector.PreHandlePackage(options, result) {
 		return
 	}
 	for idx, length := asmHdrIdx+1, len(options.Args); idx < length; idx++ {
@@ -61,7 +61,7 @@ func execute0(ins api.Instrument, options *api.CompileOptions, asmHdrIdx int) {
 		if !strings.HasSuffix(path, ".go") {
 			continue
 		}
-		if !ins.PreHandleFile(path, idx, options, result) {
+		if !injector.PreHandleFile(path, idx, options, result) {
 			continue
 		}
 		// parse the ast file
@@ -70,12 +70,12 @@ func execute0(ins api.Instrument, options *api.CompileOptions, asmHdrIdx int) {
 		if err != nil {
 			panic(err)
 		}
-		if !ins.HandleFile(path, idx, fset, af, options, result) {
+		if !injector.HandleFile(path, idx, fset, af, options, result) {
 			continue
 		}
-		ins.PostHandleFile(path, idx, fset, af, options, result)
+		injector.PostHandleFile(path, idx, fset, af, options, result)
 	}
-	ins.PostHandlePackage(options, result)
+	injector.PostHandlePackage(options, result)
 }
 
 func resolveCompileOptions(args []string, app *opt.AppOptions) *api.CompileOptions {
