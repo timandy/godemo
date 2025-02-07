@@ -14,7 +14,10 @@ import (
 	"github.com/timandy/routiner/tools/stringutil"
 )
 
-var defaults = []api.Injector{injectors.NewRuntimeInjector(), injectors.NewRoutineXInjector()}
+var (
+	flags    = []string{"-asmhdr", "-pack"}
+	defaults = []api.Injector{injectors.NewRuntimeInjector(), injectors.NewRoutineXInjector()}
+)
 
 func Execute(args []string, app *opt.AppOptions) []string {
 	// resolve options
@@ -30,17 +33,17 @@ func Execute(args []string, app *opt.AppOptions) []string {
 }
 
 func execute(options *api.CompileOptions) []string {
+	pathIdx := indexPath(options.Args)
+	if pathIdx == -1 {
+		return options.Args
+	}
 	for _, injector := range defaults {
-		asmHdrIdx := stringutil.LastIndexOf(options.Args, "-asmhdr")
-		if asmHdrIdx == -1 {
-			return options.Args
-		}
-		execute0(injector, options, asmHdrIdx)
+		execute0(injector, options, pathIdx)
 	}
 	return options.Args
 }
 
-func execute0(injector api.Injector, options *api.CompileOptions, asmHdrIdx int) {
+func execute0(injector api.Injector, options *api.CompileOptions, pathIdx int) {
 	// define result
 	result := api.NewInjectResult()
 	// proc args after exec
@@ -56,7 +59,7 @@ func execute0(injector api.Injector, options *api.CompileOptions, asmHdrIdx int)
 	if !injector.PreHandlePackage(options, result) {
 		return
 	}
-	for idx, length := asmHdrIdx+1, len(options.Args); idx < length; idx++ {
+	for idx, length := pathIdx, len(options.Args); idx < length; idx++ {
 		path := options.Args[idx]
 		if !strings.HasSuffix(path, ".go") {
 			continue
@@ -99,4 +102,14 @@ func resolveCompileOptions0(args []string) *api.CompileOptions {
 	}
 	remainArgs := flagSet.Args()
 	return resolveCompileOptions0(remainArgs)
+}
+
+func indexPath(args []string) int {
+	for _, f := range flags {
+		i := stringutil.LastIndexOf(args, f)
+		if i != -1 {
+			return i + 1 //next item is file path
+		}
+	}
+	return -1
 }
