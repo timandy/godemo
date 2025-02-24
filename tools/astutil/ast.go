@@ -11,51 +11,6 @@ func CreateField(name string, typ string) *ast.Field {
 	return &ast.Field{Names: []*ast.Ident{ast.NewIdent(name)}, Type: ast.NewIdent(typ)}
 }
 
-func IndexAssignTimerNil(bodyList []ast.Stmt) (x ast.Expr, index int) {
-	for idx, stmt := range bodyList {
-		// check is AssignStmt
-		as, isAs := stmt.(*ast.AssignStmt)
-		if !isAs {
-			continue
-		}
-		// check is assign operator
-		if as.Tok != token.ASSIGN {
-			continue
-		}
-		// check the length of lhs is 1
-		lhs := as.Lhs
-		if len(lhs) != 1 {
-			continue
-		}
-		// check lhs[0] is SelectorExpr
-		se, isSe := lhs[0].(*ast.SelectorExpr)
-		if !isSe {
-			continue
-		}
-		// check selector is ?.timer
-		sel := se.Sel
-		if sel == nil || sel.Name != "timer" {
-			continue
-		}
-		// check the length of rhs is 1
-		rhs := as.Rhs
-		if len(rhs) != 1 {
-			continue
-		}
-		// check rhs[0] is Ident
-		ident, isIdent := rhs[0].(*ast.Ident)
-		if !isIdent {
-			continue
-		}
-		// check the AssignStmt is ?.timer = nil
-		if ident.Name != "nil" {
-			continue
-		}
-		return se.X, idx
-	}
-	return nil, -1
-}
-
 func CreateAssignNilStmt(x ast.Expr, name string) ast.Stmt {
 	return &ast.AssignStmt{
 		Lhs: []ast.Expr{&ast.SelectorExpr{X: x, Sel: &ast.Ident{Name: name}}},

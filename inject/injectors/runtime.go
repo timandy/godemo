@@ -127,22 +127,20 @@ func (r *RuntimeInjector) handleNode(node ast.Node, options *api.CompileOptions)
 		if params == nil || len(params.List) != 1 {
 			return false
 		}
-		//
+		paramField0 := params.List[0]
+		if paramField0 == nil || len(paramField0.Names) != 1 {
+			return false
+		}
+		gp := paramField0.Names[0]
+		// check body not empty
 		body := n.Body
-		if body == nil {
+		if body == nil || len(body.List) == 0 {
 			return false
 		}
-		list := body.List
-		if len(list) == 0 {
-			return false
-		}
-		x, index := astutil.IndexAssignTimerNil(list)
-		if index == -1 {
-			return false
-		}
-		threadLocalsStmt := astutil.CreateAssignNilStmt(x, "threadLocals")
-		inheritableThreadLocalsStmt := astutil.CreateAssignNilStmt(x, "inheritableThreadLocals")
-		body.List = append(list[:index+1], append([]ast.Stmt{threadLocalsStmt, inheritableThreadLocalsStmt}, list[index+1:]...)...)
+		// add set nil statements
+		threadLocalsStmt := astutil.CreateAssignNilStmt(gp, "threadLocals")
+		inheritableThreadLocalsStmt := astutil.CreateAssignNilStmt(gp, "inheritableThreadLocals")
+		body.List = append([]ast.Stmt{threadLocalsStmt, inheritableThreadLocalsStmt}, body.List...)
 		if options.Debug || options.Verbose {
 			log.Info("enhance function 'runtime.goexit0' add statement 'gp.threadLocals = nil'")
 			log.Info("enhance function 'runtime.goexit0' add statement 'gp.inheritableThreadLocals = nil'")
