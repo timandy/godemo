@@ -8,6 +8,7 @@ import (
 
 	"github.com/timandy/routiner/inject/api"
 	"github.com/timandy/routiner/tools/log"
+	"github.com/timandy/routiner/tools/os"
 )
 
 type RoutineXInjector struct {
@@ -43,12 +44,27 @@ func (r *RoutineXInjector) HandleFile(path string, idx int, fset *token.FileSet,
 func (r *RoutineXInjector) PostHandleFile(path string, idx int, fset *token.FileSet, af *ast.File, options *api.CompileOptions, result *api.InjectResult) {
 	srcDir := filepath.Dir(path)
 	srcShortName := filepath.Base(path)
-	srcExtName := filepath.Ext(srcShortName)
-	destShortName := srcShortName[:len(srcShortName)-len(srcExtName)] + "_link.go"
+	destShortName := ""
+	if strings.HasSuffix(srcShortName, "_test.go") {
+		//测试文件
+		destShortName = srcShortName[:len(srcShortName)-len("_test.go")] + "_link_test.go"
+	} else {
+		//源码文件
+		destShortName = srcShortName[:len(srcShortName)-len(".go")] + "_link.go"
+	}
 	destPath := filepath.Join(srcDir, destShortName)
-	result.ReplaceFiles[idx] = destPath
+	//存在可替换的
+	if os.IsFile(destPath) {
+		result.ReplaceFiles[idx] = destPath
+		if options.Debug || options.Verbose {
+			log.Infof("replace source '%v' with '%v'", srcShortName, destShortName)
+		}
+		return
+	}
+	//不存在可替换的
+	result.ReplaceFiles[idx] = ""
 	if options.Debug || options.Verbose {
-		log.Infof("replace source '%v' with '%v'", srcShortName, destShortName)
+		log.Infof("remove source '%v'", srcShortName)
 	}
 }
 
