@@ -4,10 +4,14 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/timandy/routiner/tools/trace"
 )
 
+var traceId = trace.NewTraceId()
+
 func Info(msg string) {
-	_, _ = fmt.Fprintln(os.Stderr, "--> "+msg)
+	_, _ = fmt.Fprintln(os.Stderr, "--> ["+traceId+"] "+msg)
 }
 
 func Infof(format string, args ...any) {
@@ -16,7 +20,7 @@ func Infof(format string, args ...any) {
 }
 
 func PrintArg(prefix string, arg string) {
-	_, _ = fmt.Fprintln(os.Stderr, "==> ["+prefix+"] "+arg)
+	_, _ = fmt.Fprintln(os.Stderr, "==> ["+traceId+"] ["+prefix+"] "+arg)
 }
 
 func PrintArgs(prefix string, args []string) {
