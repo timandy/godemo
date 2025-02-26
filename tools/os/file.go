@@ -26,6 +26,15 @@ func IsFile(path string) bool {
 	return exist && !f.IsDir()
 }
 
+// ReadFile 从磁盘读取文件, 失败抛出异常
+func ReadFile(path string) []byte {
+	bytes, err := os.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	return bytes
+}
+
 // WriteFile 把数据写入指定路径的文件. 文件不存在自动创建, 存在则覆盖原有文件
 func WriteFile(path, data string) {
 	// create or override file
