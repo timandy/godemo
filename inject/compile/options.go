@@ -1,4 +1,4 @@
-package api
+package compile
 
 import (
 	"path/filepath"
@@ -15,7 +15,31 @@ type CompileOptions struct {
 	Args    []string // remain args exclude the options of current program
 }
 
-func (c CompileOptions) IsValid(execName string) bool {
+func (c *CompileOptions) IsDebug() bool {
+	return c.Debug
+}
+
+func (c *CompileOptions) IsVerbose() bool {
+	return c.Verbose
+}
+
+func (c *CompileOptions) GetArgs() []string {
+	return c.Args
+}
+
+func (c *CompileOptions) SetArgs(args []string) {
+	c.Args = args
+}
+
+func (c *CompileOptions) GetPackage() string {
+	return c.Package
+}
+
+func (c *CompileOptions) GetWorkDir() string {
+	return filepath.Dir(c.Output)
+}
+
+func (c *CompileOptions) IsValid(execName string) bool {
 	cmd := filepath.Base(execName)
 	if ext := filepath.Ext(cmd); ext != "" {
 		cmd = strings.TrimSuffix(cmd, ext)
@@ -23,11 +47,7 @@ func (c CompileOptions) IsValid(execName string) bool {
 	return cmd == "compile" && c.Package != "" && c.Output != ""
 }
 
-func (c CompileOptions) WorkDir() string {
-	return filepath.Dir(c.Output)
-}
-
-func (c CompileOptions) Clone() *CompileOptions {
+func (c *CompileOptions) Clone() *CompileOptions {
 	return &CompileOptions{
 		Package: c.Package,
 		Output:  c.Output,

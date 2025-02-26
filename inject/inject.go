@@ -1,115 +1,27 @@
 package inject
 
 import (
-	"go/parser"
-	"go/token"
-	"strings"
-
 	"github.com/timandy/routiner/inject/api"
-	"github.com/timandy/routiner/inject/injectors"
-	"github.com/timandy/routiner/tools/flag"
-	"github.com/timandy/routiner/tools/log"
+	"github.com/timandy/routiner/inject/compile"
+	compileInjector "github.com/timandy/routiner/inject/compile/injector"
+	"github.com/timandy/routiner/inject/cover"
+	coverInjector "github.com/timandy/routiner/inject/cover/injector"
 	"github.com/timandy/routiner/tools/opt"
-	"github.com/timandy/routiner/tools/slices"
-	"github.com/timandy/routiner/tools/stringutil"
 )
 
 var (
-	flags    = []string{"-asmhdr", "-pack"}
-	defaults = []api.Injector{injectors.NewRuntimeInjector(), injectors.NewRoutineXInjector()}
+	coverInjectors   = []api.Injector{coverInjector.NewRoutineXInjector()}
+	compileInjectors = []api.Injector{compileInjector.NewRuntimeInjector(), compileInjector.NewRoutineXInjector()}
+	cmds             = []api.Cmd{cover.NewCoverCmd(coverInjectors), compile.NewCompileCmd(compileInjectors)}
 )
 
 func Execute(args []string, app *opt.AppOptions) []string {
-	// resolve options
-	options := resolveCompileOptions(args, app)
-	if options == nil {
-		return args
-	}
-	if options.Debug {
-		log.PrintArg("workdir", options.WorkDir())
-	}
-	// exec injectors and return new args
-	return execute(options.Clone())
-}
-
-func execute(options *api.CompileOptions) []string {
-	pathIdx := indexPath(options.Args)
-	if pathIdx == -1 {
-		return options.Args
-	}
-	for _, injector := range defaults {
-		execute0(injector, options, pathIdx)
-	}
-	return options.Args
-}
-
-func execute0(injector api.Injector, options *api.CompileOptions, pathIdx int) {
-	// define result
-	result := api.NewInjectResult()
-	// proc args after exec
-	defer func() {
-		for idx, path := range result.ReplaceFiles {
-			options.Args[idx] = path
-		}
-		args := append(options.Args, result.ExtraFiles...)
-		args = slices.Filter(args, func(str string) bool { return str != "" })
-		options.Args = args
-	}()
-	// verify this injector can handle the package
-	if !injector.PreHandlePackage(options, result) {
-		return
-	}
-	for idx, length := pathIdx, len(options.Args); idx < length; idx++ {
-		path := options.Args[idx]
-		if !strings.HasSuffix(path, ".go") {
+	for _, cmd := range cmds {
+		cmd.Resolve(args, app)
+		if !cmd.IsValid() {
 			continue
 		}
-		if !injector.PreHandleFile(path, idx, options, result) {
-			continue
-		}
-		// parse the ast file
-		fset := token.NewFileSet()
-		af, err := parser.ParseFile(fset, path, nil, parser.ParseComments)
-		if err != nil {
-			panic(err)
-		}
-		if !injector.HandleFile(path, idx, fset, af, options, result) {
-			continue
-		}
-		injector.PostHandleFile(path, idx, fset, af, options, result)
+		return cmd.Execute()
 	}
-	injector.PostHandlePackage(options, result)
-}
-
-func resolveCompileOptions(args []string, app *opt.AppOptions) *api.CompileOptions {
-	options := resolveCompileOptions0(args)
-	if options != nil {
-		options.Debug = app.Debug
-		options.Verbose = app.Verbose
-		options.Args = args
-	}
-	return options
-}
-
-func resolveCompileOptions0(args []string) *api.CompileOptions {
-	if len(args) == 0 {
-		return nil
-	}
-	options := &api.CompileOptions{}
-	flagSet := flag.ParseStruct(options, args[0], args[1:])
-	if options.IsValid(flagSet.Name()) {
-		return options
-	}
-	remainArgs := flagSet.Args()
-	return resolveCompileOptions0(remainArgs)
-}
-
-func indexPath(args []string) int {
-	for _, f := range flags {
-		i := stringutil.LastIndexOf(args, f)
-		if i != -1 {
-			return i + 1 //next item is file path
-		}
-	}
-	return -1
+	return args
 }

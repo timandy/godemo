@@ -1,4 +1,4 @@
-package injectors
+package injector
 
 import (
 	"go/ast"
@@ -21,17 +21,18 @@ func NewRuntimeInjector() api.Injector {
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RuntimeInjector) PreHandlePackage(options *api.CompileOptions, result *api.InjectResult) bool {
-	return options.Package == "runtime"
+func (r *RuntimeInjector) PreHandlePackage(options api.CmdOptions, result *api.InjectResult) bool {
+	pkg := options.GetPackage()
+	return pkg == "runtime"
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RuntimeInjector) PreHandleFile(path string, idx int, options *api.CompileOptions, result *api.InjectResult) bool {
+func (r *RuntimeInjector) PreHandleFile(path string, idx int, options api.CmdOptions, result *api.InjectResult) bool {
 	return strings.HasSuffix(path, "runtime2.go") || strings.HasSuffix(path, "proc.go")
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RuntimeInjector) HandleFile(path string, idx int, fset *token.FileSet, af *ast.File, options *api.CompileOptions, result *api.InjectResult) bool {
+func (r *RuntimeInjector) HandleFile(path string, idx int, fset *token.FileSet, af *ast.File, options api.CmdOptions, result *api.InjectResult) bool {
 	handled := false
 	ast.Inspect(af, func(node ast.Node) bool {
 		if r.handleNode(node, options) {
@@ -44,15 +45,15 @@ func (r *RuntimeInjector) HandleFile(path string, idx int, fset *token.FileSet, 
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RuntimeInjector) PostHandleFile(path string, idx int, fset *token.FileSet, af *ast.File, options *api.CompileOptions, result *api.InjectResult) {
+func (r *RuntimeInjector) PostHandleFile(path string, idx int, fset *token.FileSet, af *ast.File, options api.CmdOptions, result *api.InjectResult) {
 	srcShortName := filepath.Base(path)
-	destPath := filepath.Join(options.WorkDir(), srcShortName)
+	destPath := filepath.Join(options.GetWorkDir(), srcShortName)
 	astutil.SaveAs(destPath, fset, af)
 	result.ReplaceFiles[idx] = destPath
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RuntimeInjector) PostHandlePackage(options *api.CompileOptions, result *api.InjectResult) {
+func (r *RuntimeInjector) PostHandlePackage(options api.CmdOptions, result *api.InjectResult) {
 	code := stringutil.ExecuteTemplate(`package runtime
 
 import _ "unsafe"
@@ -71,15 +72,16 @@ func getgp() *g {
 `, nil)
 	// save file
 	destShortName := "runtime_routine.go"
-	destPath := filepath.Join(options.WorkDir(), destShortName)
+	destPath := filepath.Join(options.GetWorkDir(), destShortName)
 	os.WriteFile(destPath, code)
 	result.ExtraFiles = append(result.ExtraFiles, destPath)
-	if options.Debug || options.Verbose {
-		log.Info("create function 'runtime.getg0' and 'runtime.getgp'")
+	if options.IsDebug() || options.IsVerbose() {
+		log.Info("compile: create function 'runtime.getg0'")
+		log.Info("compile: create function 'runtime.getgp'")
 	}
 }
 
-func (r *RuntimeInjector) handleNode(node ast.Node, options *api.CompileOptions) bool {
+func (r *RuntimeInjector) handleNode(node ast.Node, options api.CmdOptions) bool {
 	switch n := node.(type) {
 	case *ast.TypeSpec:
 		ident := n.Name
@@ -101,9 +103,9 @@ func (r *RuntimeInjector) handleNode(node ast.Node, options *api.CompileOptions)
 		threadLocalsField := astutil.CreateField("threadLocals", "unsafe.Pointer")
 		inheritableThreadLocalsField := astutil.CreateField("inheritableThreadLocals", "unsafe.Pointer")
 		fields.List = append(fieldList, threadLocalsField, inheritableThreadLocalsField)
-		if options.Debug || options.Verbose {
-			log.Info("enhance struct 'runtime.g' add field 'threadLocals unsafe.Pointer'")
-			log.Info("enhance struct 'runtime.g' add field 'inheritableThreadLocals unsafe.Pointer'")
+		if options.IsDebug() || options.IsVerbose() {
+			log.Info("compile: enhance struct 'runtime.g' add field 'threadLocals unsafe.Pointer'")
+			log.Info("compile: enhance struct 'runtime.g' add field 'inheritableThreadLocals unsafe.Pointer'")
 		}
 		return true
 	case *ast.FuncDecl:
@@ -141,9 +143,9 @@ func (r *RuntimeInjector) handleNode(node ast.Node, options *api.CompileOptions)
 		threadLocalsStmt := astutil.CreateAssignNilStmt(gp, "threadLocals")
 		inheritableThreadLocalsStmt := astutil.CreateAssignNilStmt(gp, "inheritableThreadLocals")
 		body.List = append([]ast.Stmt{threadLocalsStmt, inheritableThreadLocalsStmt}, body.List...)
-		if options.Debug || options.Verbose {
-			log.Info("enhance function 'runtime.goexit0' add statement 'gp.threadLocals = nil'")
-			log.Info("enhance function 'runtime.goexit0' add statement 'gp.inheritableThreadLocals = nil'")
+		if options.IsDebug() || options.IsVerbose() {
+			log.Info("compile: enhance function 'runtime.goexit0' add statement 'gp.threadLocals = nil'")
+			log.Info("compile: enhance function 'runtime.goexit0' add statement 'gp.inheritableThreadLocals = nil'")
 		}
 		return true
 	default:

@@ -1,4 +1,4 @@
-package injectors
+package injector
 
 import (
 	"go/ast"
@@ -19,17 +19,18 @@ func NewRoutineXInjector() api.Injector {
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RoutineXInjector) PreHandlePackage(options *api.CompileOptions, result *api.InjectResult) bool {
-	return options.Package == "github.com/timandy/routine" || options.Package == "github.com/timandy/routine/g"
+func (r *RoutineXInjector) PreHandlePackage(options api.CmdOptions, result *api.InjectResult) bool {
+	pkg := options.GetPackage()
+	return pkg == "github.com/timandy/routine" || pkg == "github.com/timandy/routine/g"
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RoutineXInjector) PreHandleFile(path string, idx int, options *api.CompileOptions, result *api.InjectResult) bool {
+func (r *RoutineXInjector) PreHandleFile(path string, idx int, options api.CmdOptions, result *api.InjectResult) bool {
 	return true
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RoutineXInjector) HandleFile(path string, idx int, fset *token.FileSet, af *ast.File, options *api.CompileOptions, result *api.InjectResult) bool {
+func (r *RoutineXInjector) HandleFile(path string, idx int, fset *token.FileSet, af *ast.File, options api.CmdOptions, result *api.InjectResult) bool {
 	for _, comment := range af.Comments {
 		for _, c := range comment.List {
 			if r.hasTag(c) {
@@ -41,7 +42,7 @@ func (r *RoutineXInjector) HandleFile(path string, idx int, fset *token.FileSet,
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RoutineXInjector) PostHandleFile(path string, idx int, fset *token.FileSet, af *ast.File, options *api.CompileOptions, result *api.InjectResult) {
+func (r *RoutineXInjector) PostHandleFile(path string, idx int, fset *token.FileSet, af *ast.File, options api.CmdOptions, result *api.InjectResult) {
 	srcDir := filepath.Dir(path)
 	srcShortName := filepath.Base(path)
 	destShortName := ""
@@ -56,20 +57,20 @@ func (r *RoutineXInjector) PostHandleFile(path string, idx int, fset *token.File
 	//存在可替换的
 	if os.IsFile(destPath) {
 		result.ReplaceFiles[idx] = destPath
-		if options.Debug || options.Verbose {
-			log.Infof("replace source '%v' with '%v'", srcShortName, destShortName)
+		if options.IsDebug() || options.IsVerbose() {
+			log.Infof("compile: replace source '%v' with '%v'", srcShortName, destShortName)
 		}
 		return
 	}
 	//不存在可替换的
 	result.ReplaceFiles[idx] = ""
-	if options.Debug || options.Verbose {
-		log.Infof("remove source '%v'", srcShortName)
+	if options.IsDebug() || options.IsVerbose() {
+		log.Infof("compile: remove source '%v'", srcShortName)
 	}
 }
 
 //goland:noinspection GoUnusedParameter
-func (r *RoutineXInjector) PostHandlePackage(options *api.CompileOptions, result *api.InjectResult) {
+func (r *RoutineXInjector) PostHandlePackage(options api.CmdOptions, result *api.InjectResult) {
 }
 
 // hasTag 是否有 !routinex 编译标记
