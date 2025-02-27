@@ -1,8 +1,10 @@
 package exec
 
 import (
+	"bytes"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 func RunCmd(args []string) {
@@ -21,6 +23,26 @@ func RunCmd(args []string) {
 		return
 	}
 	os.Exit(statusCode)
+}
+
+func RunCmdOutput(args []string) string {
+	if len(args) == 0 {
+		return ""
+	}
+	path := args[0]
+	args = args[1:]
+	cmd := exec.Command(path, args...)
+	out := bytes.Buffer{}
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = &out
+	cmd.Stderr = os.Stderr
+	startCmd(cmd)
+	statusCode := waitCmd(cmd)
+	if statusCode == 0 {
+		return strings.TrimSpace(out.String())
+	}
+	os.Exit(statusCode)
+	return ""
 }
 
 func startCmd(cmd *exec.Cmd) {
