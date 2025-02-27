@@ -1,6 +1,6 @@
 package api
 
-import "github.com/timandy/routiner/tools/opt"
+import "github.com/timandy/routinex/tools/opt"
 
 type Cmd interface {
 	// Resolve 解析参数

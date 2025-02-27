@@ -3,12 +3,12 @@ package main
 import (
 	"os"
 
-	"github.com/timandy/routiner/inject"
-	"github.com/timandy/routiner/tools/exec"
-	"github.com/timandy/routiner/tools/flag"
-	"github.com/timandy/routiner/tools/log"
-	"github.com/timandy/routiner/tools/opt"
-	"github.com/timandy/routiner/tools/slices"
+	"github.com/timandy/routinex/inject"
+	"github.com/timandy/routinex/tools/exec"
+	"github.com/timandy/routinex/tools/flag"
+	"github.com/timandy/routinex/tools/log"
+	"github.com/timandy/routinex/tools/opt"
+	"github.com/timandy/routinex/tools/slices"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-# routine 编译器
+# routinex 编译器
 
 ## 基础知识
 
@@ -9,25 +9,25 @@
 - 示例
 
 ```shell
-go build -toolexec='routiner go-agent' -a -o main.exe .
+go build -toolexec='routinex go-agent' -a -o main.exe .
 ```
 
-`go build` 是个高级的工具，其会执行 `compile.exe`、`asm.exe`和`link.exe` 等一系列过程。
+`go build` 是个高级的工具，其会执行 `asm.exe`、`compile.exe` 和 `link.exe` 等一系列过程。
 
-参数 `-toolexec` 主要拦截编译过程，再调用 `compile.exe`，其参数为自带的 `库源码` 和 `用户源码`。
+参数 `-toolexec` 主要拦截编译过程，再调用 `compile.exe` 等底层工具，其参数为自带的 `库源码` 和 `用户源码`。
 
 以编译 `runtime` 包为例，编译过程会经历以下的步骤：
 
 ```shell
 # (1)
-routiner go-agent compile.exe -o xx.a -trimpath $WORK\xx=> -p runtime ...... -asmhdr runtime.go runtime2.go
+routinex go-agent compile.exe -o xx.a -trimpath $WORK\xx=> -p runtime ...... -asmhdr runtime.go runtime2.go
 # (2)
 go-agent compile.exe -o xx.a -trimpath $WORK\xx=> -p runtime ...... -asmhdr runtime.go runtime2.go
 # (3)
 compile.exe -o xx.a -trimpath $WORK\xx=> -p runtime ...... -asmhdr runtime.go runtime2.go
 ```
 
-`go build` 会调用 `(1)`, 但是第 `(2)` 步需要 `(1)` 中的 `routiner` 自身逻辑发起 `(2)` 调用。
+`go build` 会调用 `(1)`, 但是第 `(2)` 步需要 `(1)` 中的 `routinex` 自身逻辑发起 `(2)` 调用。
 
 然后需要 `(2)` 中的 `go-agent` 发起 `(3)` 调用。
 
@@ -45,7 +45,9 @@ go build -a
 
 下一个编译过程如果用到了该包的编译产物，将跳过编译直接使用上次编译产物。
 
-由于 `routiner` 会替换库文件的路径，为确保修改后的文件生效，所以要指定 `-a` 参数。
+由于 `routinex` 会替换库文件的路径，为确保修改后的文件生效，所以要指定 `-a` 参数。
+
+当构建一次后并且下次构建不再需要 `routinex`，需要再次指定 `-a` 参数，以重新缓存标准库的编译产物。
 
 ### `-x` 作用
 
@@ -100,7 +102,7 @@ WORK=/tmp/go-build1234567890
 
 ## 核心逻辑
 
-`routiner` 的核心逻辑如下：
+`routinex` 的核心逻辑如下：
 
 1. 过滤要修改的包，例如 `runtime` 和 `routine` 包；
 2. 使用 `ast` 解析源文件结构，修改语法并将内容存到临时文件；
@@ -112,15 +114,10 @@ WORK=/tmp/go-build1234567890
 ### 安装
 
 ```shell
-# 清理构建物
-go clean
-# 重新编译, 防止缓存
-go build -a .
-# 安装到 GOPATH 下
-go install
+go install -a github.com/timandy/routinex@latest
 ```
 
-调用前需要设置环境变量，把 `%GOPATH%/bin` 追加到 `PATH`, 以便在控制台直接运行 `routiner`。
+调用前需要设置环境变量，把 `%GOPATH%/bin` 追加到 `PATH`, 以便在控制台直接运行 `routinex`。
 
 - windows
 
@@ -136,7 +133,7 @@ export PATH=$PATH:$GOPATH/bin
 
 ### 调试模式
 
-使用调试模式可以输出 `routiner` 的日志
+使用调试模式可以输出 `routinex` 的日志
 
 - `--debug` 或 `-d` 输出详细的日志
 - `--verbose` 或 `-v` 输出简略的日志
@@ -149,7 +146,7 @@ export PATH=$PATH:$GOPATH/bin
 # 设置环境变量
 SET PATH=%PATH%;%GOPATH%/bin
 # 添加参数
-go build -toolexec="routiner -v" -a -o main.exe .
+go build -toolexec="routinex -v" -a -o main.exe .
 ```
 
 - linux
@@ -160,12 +157,12 @@ go build -toolexec="routiner -v" -a -o main.exe .
 # 设置环境变量
 export PATH=$PATH:$GOPATH/bin
 # 添加参数
-go build -toolexec="routiner -v" -a -o main.exe .
+go build -toolexec="routinex -v" -a -o main.exe .
 ```
 
 ### 多工具链
 
-因不能保证其他工具链有链式传递功能，所以要将 `routiner` 放在其他工具链前边。
+因不能保证其他工具链有链式传递功能，所以要将 `routinex` 放在其他工具链前边。
 
 - windows
 
@@ -175,7 +172,7 @@ go build -toolexec="routiner -v" -a -o main.exe .
 # 设置环境变量
 SET PATH=%PATH%;%GOPATH%/bin
 # 添加参数
-go build -toolexec="routiner -v go-agent" -a -o main.exe .
+go build -toolexec="routinex -v go-agent" -a -o main.exe .
 ```
 
 - linux
@@ -186,5 +183,5 @@ go build -toolexec="routiner -v go-agent" -a -o main.exe .
 # 设置环境变量
 export PATH=$PATH:$GOPATH/bin
 # 添加参数
-go build -toolexec="routiner -v go-agent" -a -o main.exe .
+go build -toolexec="routinex -v go-agent" -a -o main.exe .
 ```

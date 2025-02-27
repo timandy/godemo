@@ -1,10 +1,10 @@
 package cover
 
 import (
-	"github.com/timandy/routiner/inject/api"
-	"github.com/timandy/routiner/tools/flag"
-	"github.com/timandy/routiner/tools/opt"
-	"github.com/timandy/routiner/tools/stringutil"
+	"github.com/timandy/routinex/inject/api"
+	"github.com/timandy/routinex/tools/flag"
+	"github.com/timandy/routinex/tools/opt"
+	"github.com/timandy/routinex/tools/stringutil"
 )
 
 var flags = []string{"-o", "-outfilelist"}

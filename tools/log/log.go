@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/timandy/routiner/tools/trace"
+	"github.com/timandy/routinex/tools/trace"
 )
 
 var traceId = trace.NewTraceId()

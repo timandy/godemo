@@ -6,11 +6,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/timandy/routiner/inject/api"
-	"github.com/timandy/routiner/tools/astutil"
-	"github.com/timandy/routiner/tools/log"
-	"github.com/timandy/routiner/tools/os"
-	"github.com/timandy/routiner/tools/stringutil"
+	"github.com/timandy/routinex/inject/api"
+	"github.com/timandy/routinex/tools/astutil"
+	"github.com/timandy/routinex/tools/log"
+	"github.com/timandy/routinex/tools/os"
+	"github.com/timandy/routinex/tools/stringutil"
 )
 
 type RuntimeInjector struct {

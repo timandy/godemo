@@ -6,12 +6,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/timandy/routiner/inject/api"
-	"github.com/timandy/routiner/inject/cover"
-	"github.com/timandy/routiner/tools/exec"
-	"github.com/timandy/routiner/tools/log"
-	"github.com/timandy/routiner/tools/os"
-	"github.com/timandy/routiner/tools/slices"
+	"github.com/timandy/routinex/inject/api"
+	"github.com/timandy/routinex/inject/cover"
+	"github.com/timandy/routinex/tools/exec"
+	"github.com/timandy/routinex/tools/log"
+	"github.com/timandy/routinex/tools/os"
+	"github.com/timandy/routinex/tools/slices"
 )
 
 type RoutineXInjector struct {

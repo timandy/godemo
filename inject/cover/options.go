@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/timandy/routiner/tools/json"
-	"github.com/timandy/routiner/tools/os"
-	"github.com/timandy/routiner/tools/slices"
+	"github.com/timandy/routinex/tools/json"
+	"github.com/timandy/routinex/tools/os"
+	"github.com/timandy/routinex/tools/slices"
 )
 
 type CoverOptions struct {

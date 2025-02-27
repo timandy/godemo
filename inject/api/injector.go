@@ -6,7 +6,7 @@ import (
 	"go/token"
 	"strings"
 
-	"github.com/timandy/routiner/tools/slices"
+	"github.com/timandy/routinex/tools/slices"
 )
 
 type Injector interface {

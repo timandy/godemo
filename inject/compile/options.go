@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/timandy/routiner/tools/slices"
+	"github.com/timandy/routinex/tools/slices"
 )
 
 type CompileOptions struct {

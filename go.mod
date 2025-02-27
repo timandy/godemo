@@ -1,4 +1,4 @@
-module github.com/timandy/routiner
+module github.com/timandy/routinex
 
 go 1.18
 

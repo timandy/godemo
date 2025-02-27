@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/timandy/routiner/inject/api"
-	"github.com/timandy/routiner/tools/log"
-	"github.com/timandy/routiner/tools/os"
+	"github.com/timandy/routinex/inject/api"
+	"github.com/timandy/routinex/tools/log"
+	"github.com/timandy/routinex/tools/os"
 )
 
 type RoutineXInjector struct {
