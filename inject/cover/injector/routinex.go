@@ -7,8 +7,11 @@ import (
 	"strings"
 
 	"github.com/timandy/routiner/inject/api"
+	"github.com/timandy/routiner/inject/cover"
+	"github.com/timandy/routiner/tools/exec"
 	"github.com/timandy/routiner/tools/log"
 	"github.com/timandy/routiner/tools/os"
+	"github.com/timandy/routiner/tools/slices"
 )
 
 type RoutineXInjector struct {
@@ -21,7 +24,7 @@ func NewRoutineXInjector() api.Injector {
 //goland:noinspection GoUnusedParameter
 func (r *RoutineXInjector) PreHandlePackage(options api.CmdOptions, result *api.InjectResult) bool {
 	pkg := options.GetPackage()
-	return pkg == "github.com/timandy/routine" || pkg == "github.com/timandy/routine/g"
+	return pkg == "routine" || pkg == "g" || pkg == "github.com/timandy/routine" || pkg == "github.com/timandy/routine/g"
 }
 
 //goland:noinspection GoUnusedParameter
@@ -51,9 +54,34 @@ func (r *RoutineXInjector) PostHandleFile(path string, idx int, fset *token.File
 	if !os.IsFile(destPath) {
 		return
 	}
-	result.ReplaceFiles[idx] = destPath
-	if options.IsDebug() || options.IsVerbose() {
-		log.Infof("cover: replace source '%v' with '%v'", srcShortName, destShortName)
+	output := (options.(*cover.CoverOptions)).Output
+	if output != "" {
+		//go1.19- cover only support one file
+		args := options.GetArgs()
+		if idx <= 0 || args[idx-1] != output {
+			return
+		}
+		if !strings.HasSuffix(output, ".cover.go") {
+			return
+		}
+		outputSrcDir := filepath.Dir(output)
+		outputSrcShortName := filepath.Base(output)
+		outputDestShortName := outputSrcShortName[:len(outputSrcShortName)-len(".cover.go")] + "_link.cover.go"
+		outputDestPath := filepath.Join(outputSrcDir, outputDestShortName)
+		//额外执行命令
+		extraArgs := slices.Clone(args)
+		extraArgs[idx-1] = outputDestPath
+		extraArgs[idx] = destPath
+		if options.IsDebug() || options.IsVerbose() {
+			log.Infof("cover: insert counters '%v' to '%v'", destShortName, outputDestShortName)
+		}
+		exec.RunCmd(extraArgs)
+	} else {
+		//go1.20+ cover support pkgcfg option
+		result.ReplaceFiles[idx] = destPath
+		if options.IsDebug() || options.IsVerbose() {
+			log.Infof("cover: replace source '%v' with '%v'", srcShortName, destShortName)
+		}
 	}
 }
 

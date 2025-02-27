@@ -7,7 +7,7 @@ import (
 	"github.com/timandy/routiner/tools/stringutil"
 )
 
-var flags = []string{"-outfilelist"}
+var flags = []string{"-o", "-outfilelist"}
 
 type CoverCmd struct {
 	injectors []api.Injector
@@ -37,7 +37,7 @@ func (c *CoverCmd) resolve(args []string) *CoverOptions {
 	}
 	options := &CoverOptions{}
 	flagSet := flag.ParseStruct(options, args[0], args[1:])
-	options.ReadConfig()
+	options.ReadConfig(flagSet.Args())
 	if options.IsValid(flagSet.Name()) {
 		return options
 	}
