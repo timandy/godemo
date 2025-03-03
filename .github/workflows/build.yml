@@ -1,0 +1,90 @@
+# Workflow file of GitHub Actions
+
+name: build
+
+on:
+  push:
+    branches:
+      - main
+      - feature/**
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  Lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout scm
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v6
+
+  CodeQL:
+    needs: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout scm
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: go
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  Test:
+    needs: Lint
+    runs-on: ${{ matrix.runs-on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ darwin, linux, windows ]
+        arch: [ amd64, arm64 ]
+        go: [ '1.18' ]
+        exclude:
+          # windows excludes
+          - os: windows
+            arch: arm64
+        include:
+          # combine runs on
+          - os: darwin
+            runs-on: macos-13
+          - os: darwin
+            arch: arm64
+            runs-on: macos-latest
+          - os: linux
+            runs-on: ubuntu-latest
+          - os: windows
+            runs-on: windows-latest
+
+    steps:
+      - name: Checkout scm
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+          cache: false
+
+      - name: 'echo'
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
+        run: echo ${GOPATH}
