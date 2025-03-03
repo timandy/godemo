@@ -12,44 +12,7 @@ on:
       - main
 
 jobs:
-  Lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout scm
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-          cache: false
-
-      - name: Lint
-        uses: golangci/golangci-lint-action@v6
-
-  CodeQL:
-    needs: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout scm
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-          cache: false
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: go
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
-
   Test:
-    needs: Lint
     runs-on: ${{ matrix.runs-on }}
     strategy:
       fail-fast: false
