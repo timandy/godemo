@@ -46,8 +46,20 @@ jobs:
           go-version: ${{ matrix.go }}
           cache: false
 
-      - name: 'echo'
-        env:
-          GOOS: ${{ matrix.os }}
-          GOARCH: ${{ matrix.arch }}
-        run: echo ${GOPATH}
+      - name: Get GOPATH
+        id: get-gopath
+        shell: bash
+        run: |
+          GOPATH=$(go env GOPATH)
+          echo "GOPATH=$GOPATH" >> $GITHUB_ENV
+
+      - name: Update PATH
+        shell: bash
+        run: |
+          echo "PATH=$PATH:$GOPATH/bin" >> $GITHUB_ENV
+
+      - name: Print environment variables
+        shell: bash
+        run: |
+          echo "GOPATH is set to: $GOPATH"
+          echo "Updated PATH is: $PATH"
