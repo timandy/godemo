@@ -50,21 +50,20 @@ jobs:
         id: get-gopath
         shell: bash
         run: |
+          echo "GOPATH=${GOPATH}"
+          echo "PATH=${PATH}"
+          echo ==
           GOPATH=$(go env GOPATH)
-          echo "GOPATH=$GOPATH" >> $GITHUB_ENV
+          PATH=$PATH:"${GOPATH}/bin"
+          echo ==          
+          echo "GOPATH=${GOPATH}"
+          echo "PATH=${PATH}" 
 
-      - name: Update PATH
+      - name: print
         shell: bash
         run: |
-          echo "PATH=$PATH:$GOPATH/bin" >> $GITHUB_ENV
-
-      - name: Print environment variables
-        shell: bash
-        run: |
-          echo "GOPATH is set to: $GOPATH"
-          echo "Updated PATH is: $PATH"
-
-      - name: Print environment variables2
-        run: |
-          echo "GOPATH is set to: %GOPATH%"
-          echo "Updated PATH is: %PATH%"
+          echo ==          
+          echo "GOPATH=${GOPATH}"
+          echo "PATH=${PATH}" 
+          echo "GOPATH: %GOPATH%"
+          echo "PATH: %PATH%"
