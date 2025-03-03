@@ -63,3 +63,8 @@ jobs:
         run: |
           echo "GOPATH is set to: $GOPATH"
           echo "Updated PATH is: $PATH"
+
+      - name: Print environment variables2
+        run: |
+          echo "GOPATH is set to: %GOPATH%"
+          echo "Updated PATH is: %PATH%"
