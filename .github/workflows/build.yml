@@ -1,0 +1,122 @@
+# Workflow file of GitHub Actions
+
+name: build
+
+on:
+  push:
+    branches:
+      - main
+      - feature/**
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  Lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout scm
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v6
+
+  CodeQL:
+    needs: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout scm
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: go
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  Test:
+    needs: Lint
+    runs-on: ${{ matrix.runs-on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ darwin, linux, windows ]
+        arch: [ amd64, arm64 ]
+        go: [ '1.18' ]
+        exclude:
+          # windows excludes
+          - os: windows
+            arch: arm64
+        include:
+          # combine runs on
+          - os: darwin
+            runs-on: macos-13
+          - os: darwin
+            arch: arm64
+            runs-on: macos-latest
+          - os: linux
+            runs-on: ubuntu-latest
+          - os: windows
+            runs-on: windows-latest
+
+    steps:
+      - name: Checkout scm
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+          cache: false
+
+      # install
+      - name: 'Install routinex'
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
+        run: go install -a .
+
+      # test
+      - name: 'Test routinex'
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
+        run: go test -v -race -coverprofile="coverage.txt" -covermode=atomic ./...
+
+      # bench normal
+      - name: 'Bench routine normal mode'
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
+        run: |
+          git clone https://github.com/timandy/routine ../routine
+          cd ../routine || exit 1
+          go test -a -v -bench .
+
+      # bench static
+      - name: 'Bench routine static mode'
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
+        run: go test -toolexec="routinex -v" -a -v -bench .
+
+      - name: Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          name: Codecov on ${{ matrix.os }}/${{ matrix.arch }} go${{ matrix.go }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
