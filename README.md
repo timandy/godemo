@@ -32,18 +32,18 @@ allowing `routine` to efficiently and safely access the data of the goroutine st
 go install -a github.com/timandy/routinex@latest
 ```
 
-Before calling, you need to set the environment variable to append `%GOPATH%/bin` to `PATH`, so that `routinex` can be run directly in the console.
+Before calling, you need to set the environment variable to append `$(go env GOPATH)/bin` to `PATH`, so that `routinex` can be run directly in the console.
 
 - windows
 
-```shell
-SET PATH=%PATH%;%GOPATH%/bin
+```powershell
+$env:Path="$env:Path;$(go env GOPATH)\bin"
 ```
 
 - linux
 
 ```shell
-export PATH=$PATH:$GOPATH/bin
+export PATH="$PATH:$(go env GOPATH)/bin"
 ```
 
 ### Enable Debugging
@@ -55,11 +55,11 @@ Using debugging parameters can output logs from `routinex`.
 
 - windows
 
-```shell
+```powershell
 @echo off
 
 # Set environment variable
-SET PATH=%PATH%;%GOPATH%/bin
+$env:Path="$env:Path;$(go env GOPATH)\bin"
 # Add parameters
 go build -toolexec="routinex -v" -a -o main.exe .
 ```
@@ -70,7 +70,7 @@ go build -toolexec="routinex -v" -a -o main.exe .
 #!/bin/bash
 
 # Set environment variable
-export PATH=$PATH:$GOPATH/bin
+export PATH="$PATH:$(go env GOPATH)/bin"
 # Add parameters
 go build -toolexec="routinex -v" -a -o main.exe .
 ```
@@ -85,11 +85,11 @@ After `routinex` is executed, it will automatically call the `abc` tool.
 
 - windows
 
-```shell
+```powershell
 @echo off
 
 # Set environment variable
-SET PATH=%PATH%;%GOPATH%/bin
+$env:Path="$env:Path;$(go env GOPATH)\bin"
 # Add parameters
 go build -toolexec="routinex -v abc" -a -o main.exe .
 ```
@@ -100,7 +100,7 @@ go build -toolexec="routinex -v abc" -a -o main.exe .
 #!/bin/bash
 
 # Set environment variable
-export PATH=$PATH:$GOPATH/bin
+export PATH="$PATH:$(go env GOPATH)/bin"
 # Add parameters
 go build -toolexec="routinex -v abc" -a -o main.exe .
 ```

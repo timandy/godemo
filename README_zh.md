@@ -32,18 +32,18 @@
 go install -a github.com/timandy/routinex@latest
 ```
 
-调用前需要设置环境变量，把`%GOPATH%/bin`追加到`PATH`，以便在控制台直接运行`routinex`。
+调用前需要设置环境变量，把`$(go env GOPATH)/bin`追加到`PATH`，以便在控制台直接运行`routinex`。
 
 - windows
 
-```shell
-SET PATH=%PATH%;%GOPATH%/bin
+```powershell
+$env:Path="$env:Path;$(go env GOPATH)\bin"
 ```
 
 - linux
 
 ```shell
-export PATH=$PATH:$GOPATH/bin
+export PATH="$PATH:$(go env GOPATH)/bin"
 ```
 
 ### 开启调试
@@ -55,11 +55,11 @@ export PATH=$PATH:$GOPATH/bin
 
 - windows
 
-```shell
+```powershell
 @echo off
 
 # 设置环境变量
-SET PATH=%PATH%;%GOPATH%/bin
+$env:Path="$env:Path;$(go env GOPATH)\bin"
 # 添加参数
 go build -toolexec="routinex -v" -a -o main.exe .
 ```
@@ -70,7 +70,7 @@ go build -toolexec="routinex -v" -a -o main.exe .
 #!/bin/bash
 
 # 设置环境变量
-export PATH=$PATH:$GOPATH/bin
+export PATH="$PATH:$(go env GOPATH)/bin"
 # 添加参数
 go build -toolexec="routinex -v" -a -o main.exe .
 ```
@@ -85,11 +85,11 @@ go build -toolexec="routinex -v" -a -o main.exe .
 
 - windows
 
-```shell
+```powershell
 @echo off
 
 # 设置环境变量
-SET PATH=%PATH%;%GOPATH%/bin
+$env:Path="$env:Path;$(go env GOPATH)\bin"
 # 添加参数
 go build -toolexec="routinex -v abc" -a -o main.exe .
 ```
@@ -100,7 +100,7 @@ go build -toolexec="routinex -v abc" -a -o main.exe .
 #!/bin/bash
 
 # 设置环境变量
-export PATH=$PATH:$GOPATH/bin
+export PATH="$PATH:$(go env GOPATH)/bin"
 # 添加参数
 go build -toolexec="routinex -v abc" -a -o main.exe .
 ```
