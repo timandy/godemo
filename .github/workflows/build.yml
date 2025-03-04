@@ -86,12 +86,12 @@ jobs:
           go-version: ${{ matrix.go }}
           cache: false
 
-      #      # test
-      #      - name: 'Test routinex'
-      #        env:
-      #          GOOS: ${{ matrix.os }}
-      #          GOARCH: ${{ matrix.arch }}
-      #        run: go test -v -race -coverprofile="coverage.txt" -covermode=atomic ./...
+      # test
+      - name: 'Test routinex'
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
+        run: go test -v -race -coverprofile="coverage.txt" -covermode=atomic ./...
 
       # install
       - name: 'Install routinex'
@@ -115,10 +115,7 @@ jobs:
           GOARCH: ${{ matrix.arch }}
         run: |
           cd routine
-          pwd
-          ls
-          routinex -h
-      #          go test -a -v -bench .
+          go test -a -v -bench .
 
       # bench routine static-mode
       - name: 'Bench routine static mode'
@@ -127,10 +124,7 @@ jobs:
           GOARCH: ${{ matrix.arch }}
         run: |
           cd routine
-          pwd
-          ls
-          routinex -h
-      #          go test -toolexec="routinex -v" -a -v -bench .
+          go test -toolexec="routinex -v" -a -v -bench .
 
       - name: Codecov
         uses: codecov/codecov-action@v5
