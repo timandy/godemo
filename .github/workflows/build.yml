@@ -104,7 +104,7 @@ jobs:
       - name: 'Clone routine'
         uses: actions/checkout@v4
         with:
-          repository: 'https://github.com/timandy/routine.git'
+          repository: timandy/routine
           ref: main
           path: ../routine
 
