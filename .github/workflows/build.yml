@@ -115,7 +115,7 @@ jobs:
           GOARCH: ${{ matrix.arch }}
         run: |
           cd routine
-          go test -a -v -bench .
+          go test -a -bench .
 
       # bench routine static-mode
       - name: 'Bench routine static mode'
@@ -124,7 +124,7 @@ jobs:
           GOARCH: ${{ matrix.arch }}
         run: |
           cd routine
-          go test -toolexec="routinex -v" -a -v -bench .
+          go test -toolexec="routinex -v" -a -bench .
 
       - name: Codecov
         uses: codecov/codecov-action@v5
