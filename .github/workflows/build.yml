@@ -115,8 +115,8 @@ jobs:
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
         run: |
-          go test -a -bench . -run ^$ -count 6 | out-file -encoding utf8 normal.txt
-          go test -a -bench . -run ^$ -count 6 -toolexec 'routinex -v' | out-file -encoding utf8 static.txt
+          go test -bench . -run ^$ -count 6 -a | out-file -encoding utf8 normal.txt
+          go test -bench . -run ^$ -count 6 -a -toolexec 'routinex -v' | out-file -encoding utf8 static.txt
           go install golang.org/x/perf/cmd/benchstat@latest
           benchstat normal.txt static.txt
 
@@ -127,8 +127,8 @@ jobs:
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
         run: |
-          go test -a -bench . -run ^$ -count 6 > normal.txt
-          go test -a -bench . -run ^$ -count 6 -toolexec 'routinex -v' > static.txt
+          go test -bench . -run ^$ -count 6 -a > normal.txt
+          go test -bench . -run ^$ -count 6 -a -toolexec 'routinex -v' > static.txt
           go install golang.org/x/perf/cmd/benchstat@latest
           benchstat normal.txt static.txt
 
