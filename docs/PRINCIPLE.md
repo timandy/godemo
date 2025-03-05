@@ -9,7 +9,7 @@ Specifies an external command or script to invoke the `Go` toolchain.
 - Example
 
 ```shell
-go build -toolexec='routinex go-agent' -a -o main.exe .
+go build -a -toolexec 'routinex go-agent' -o main.exe .
 ```
 
 `go build` is a high-level tool that executes a series of processes such as `asm.exe`, `compile.exe` and `link.exe`.

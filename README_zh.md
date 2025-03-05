@@ -61,7 +61,7 @@ export PATH="$PATH:$(go env GOPATH)/bin"
 # 设置环境变量
 $env:Path="$env:Path;$(go env GOPATH)\bin"
 # 添加参数
-go build -toolexec="routinex -v" -a -o main.exe .
+go build -a -toolexec 'routinex -v' -o main.exe .
 ```
 
 - linux
@@ -72,7 +72,7 @@ go build -toolexec="routinex -v" -a -o main.exe .
 # 设置环境变量
 export PATH="$PATH:$(go env GOPATH)/bin"
 # 添加参数
-go build -toolexec="routinex -v" -a -o main.exe .
+go build -a -toolexec 'routinex -v' -o main.exe .
 ```
 
 ### 多工具链
@@ -91,7 +91,7 @@ go build -toolexec="routinex -v" -a -o main.exe .
 # 设置环境变量
 $env:Path="$env:Path;$(go env GOPATH)\bin"
 # 添加参数
-go build -toolexec="routinex -v abc" -a -o main.exe .
+go build -a -toolexec 'routinex -v abc' -o main.exe .
 ```
 
 - linux
@@ -102,7 +102,7 @@ go build -toolexec="routinex -v abc" -a -o main.exe .
 # 设置环境变量
 export PATH="$PATH:$(go env GOPATH)/bin"
 # 添加参数
-go build -toolexec="routinex -v abc" -a -o main.exe .
+go build -a -toolexec 'routinex -v abc' -o main.exe .
 ```
 
 ## :bulb:实现原理

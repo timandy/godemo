@@ -61,7 +61,7 @@ Using debugging parameters can output logs from `routinex`.
 # Set environment variable
 $env:Path="$env:Path;$(go env GOPATH)\bin"
 # Add parameters
-go build -toolexec="routinex -v" -a -o main.exe .
+go build -a -toolexec 'routinex -v' -o main.exe .
 ```
 
 - linux
@@ -72,7 +72,7 @@ go build -toolexec="routinex -v" -a -o main.exe .
 # Set environment variable
 export PATH="$PATH:$(go env GOPATH)/bin"
 # Add parameters
-go build -toolexec="routinex -v" -a -o main.exe .
+go build -a -toolexec 'routinex -v' -o main.exe .
 ```
 
 ### Multiple Toolchains
@@ -91,7 +91,7 @@ After `routinex` is executed, it will automatically call the `abc` tool.
 # Set environment variable
 $env:Path="$env:Path;$(go env GOPATH)\bin"
 # Add parameters
-go build -toolexec="routinex -v abc" -a -o main.exe .
+go build -a -toolexec 'routinex -v abc' -o main.exe .
 ```
 
 - linux
@@ -102,7 +102,7 @@ go build -toolexec="routinex -v abc" -a -o main.exe .
 # Set environment variable
 export PATH="$PATH:$(go env GOPATH)/bin"
 # Add parameters
-go build -toolexec="routinex -v abc" -a -o main.exe .
+go build -a -toolexec 'routinex -v abc' -o main.exe .
 ```
 
 ## :bulb:Implementation Principle

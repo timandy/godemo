@@ -9,7 +9,7 @@
 - 示例
 
 ```shell
-go build -toolexec='routinex go-agent' -a -o main.exe .
+go build -a -toolexec 'routinex go-agent' -o main.exe .
 ```
 
 `go build`是个高级的工具，其会执行`asm`、`compile`和`link`等一系列过程。
