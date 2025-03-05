@@ -108,23 +108,29 @@ jobs:
           ref: main
           path: routine
 
-      # bench routine normal-mode
-      - name: 'Bench routine normal mode'
+      # bench on windows
+      - name: 'Bench on windows'
+        if: ${{ matrix.os == 'windows' }}
         env:
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
         run: |
-          cd routine
-          go test -a -bench .
+          go test -a -bench . -run ^$ -count 6 | out-file -encoding utf8 normal.txt
+          go test -a -bench . -run ^$ -count 6 -toolexec 'routinex -v' | out-file -encoding utf8 static.txt
+          go install golang.org/x/perf/cmd/benchstat@latest
+          benchstat normal.txt static.txt
 
-      # bench routine static-mode
-      - name: 'Bench routine static mode'
+      # bench on other
+      - name: 'Bench on other'
+        if: ${{ matrix.os != 'windows' }}
         env:
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
         run: |
-          cd routine
-          go test -toolexec="routinex -v" -a -bench .
+          go test -a -bench . -run ^$ -count 6 > normal.txt
+          go test -a -bench . -run ^$ -count 6 -toolexec 'routinex -v' > static.txt
+          go install golang.org/x/perf/cmd/benchstat@latest
+          benchstat normal.txt static.txt
 
       - name: Codecov
         uses: codecov/codecov-action@v5
