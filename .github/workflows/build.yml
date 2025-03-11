@@ -25,22 +25,22 @@ jobs:
           - os: windows
             arch: arm64
         include:
-          # combine runs on
-          - os: darwin
-            runs-on: macos-13
-          - os: darwin
-            arch: arm64
-            runs-on: macos-latest
+#          # combine runs on
+#          - os: darwin
+#            runs-on: macos-13
+#          - os: darwin
+#            arch: arm64
+#            runs-on: macos-latest
           - os: linux
             runs-on: ubuntu-latest
-          - os: windows
-            runs-on: windows-latest
+#          - os: windows
+#            runs-on: windows-latest
 
     steps:
       - name: list version
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get list -a qemu-user-static
+          sudo apt list -a qemu-user-static
           
            
